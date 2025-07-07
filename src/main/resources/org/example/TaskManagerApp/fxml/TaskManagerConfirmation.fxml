@@ -23,7 +23,7 @@
             </Button>
             <StackPane prefHeight="150.0" prefWidth="600.0">
                <children>
-                  <Text fx:id="TehtavaConfirmation" strokeType="OUTSIDE" strokeWidth="0.0" wrappingWidth="500.0">
+                  <Text fx:id="TehtavaConfirmation" strokeType="OUTSIDE" strokeWidth="0.0" textAlignment="CENTER" wrappingWidth="500.0">
                      <font>
                         <Font size="25.0" />
                      </font>
