@@ -1,5 +1,6 @@
 package org.example.TaskManagerApp;
 
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
@@ -16,6 +17,7 @@ import javafx.scene.layout.HBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.converter.DefaultStringConverter;
+import javafx.util.converter.IntegerStringConverter;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -43,13 +45,22 @@ public class TaskManagerMainUIController {
     private TableColumn<Tehtava, String> TableColumnNimi;
 
     @FXML
+    private TableColumn<Tehtava, Integer> TableColumnId;
+
+    @FXML
     private TableView<Tehtava> TableViewCenter;
 
     @FXML
     private Text TextTehtavalista;
 
     @FXML
+    private TextField TextFieldId;
+
+    @FXML
     private TextField TextFieldNimi;
+
+    @FXML
+    private Text TextId;
 
     @FXML
     private Text TextKuvaus;
@@ -75,18 +86,85 @@ public class TaskManagerMainUIController {
     @FXML
     private StackPane StackPaneDelete;
 
+    private Integer tehtavanykyId;
+
+
+    public class CustomIntegerStringConverter extends IntegerStringConverter{
+        private final IntegerStringConverter converter = new IntegerStringConverter();
+
+        @Override
+        public String toString(Integer object) {
+            try {
+                return converter.toString(object);
+            } catch (NumberFormatException e) {
+                TextIlmoitusAdd.setText("Kaikissa tekstikentissä pitää olla tekstiä!");
+            }
+            return null;
+        }
+
+        @Override
+        public Integer fromString(String string) {
+            try {
+                return converter.fromString(string);
+            } catch (NumberFormatException e) {
+                TextIlmoitusAdd.setText("Tehtävän ID:n täytyy olla kokonaisluku!");
+            }
+            return null;
+        }
+    }
 
     //AlustaaTableView:n eri tietoja, kun ikkuna avataan
     @FXML
     private void initialize() {
 
-        //Asettaa TableView:n solut saamaan arvot Tehtavanimi-tekstiboksista ja Tehtavakuvaus-tekstiboksista
+        //Asettaa TableView:n solut saamaan arvot TextFieldId-tekstiboksista, TextFieldNimi-tekstiboksista ja TextFieldKuvaus-tekstiboksista
+        TableColumnId.setCellValueFactory(data -> data.getValue().tehtavaIdProperty().asObject());
         TableColumnNimi.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getTehtavanimi()));
         TableColumnKuvaus.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getTehtavakuvaus()));
 
         //Asettaa TableView:n solut viemään puolet ja puolet Tableview:n koosta
-        TableColumnNimi.prefWidthProperty().bind(TableViewCenter.widthProperty().multiply(0.5));
-        TableColumnKuvaus.prefWidthProperty().bind(TableViewCenter.widthProperty().multiply(0.5));
+        TableColumnId.prefWidthProperty().bind(TableViewCenter.widthProperty().multiply(0.33));
+        TableColumnNimi.prefWidthProperty().bind(TableViewCenter.widthProperty().multiply(0.33));
+        TableColumnKuvaus.prefWidthProperty().bind(TableViewCenter.widthProperty().multiply(0.33));
+
+        //Metodi jossa muutetaan TableView:n ID-sarakkeen tietoja
+        TableColumnId.setCellFactory(column -> new TextFieldTableCell<Tehtava, Integer>(new CustomIntegerStringConverter()) {
+            private final Text text = new Text();
+
+            {
+                //Asettaa sarakkeen leveyden niin, että jos teksti menee yli reunojen, niin se pinoutuu seuraavalle riville
+                text.wrappingWidthProperty().bind(TableColumnId.widthProperty().subtract(10));
+            }
+
+            //Päivittää solun tekstin uudeksi, jos sitä muokataan
+            @Override
+            public void updateItem(Integer item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setGraphic(null);
+                } else {
+                    text.setText(item.toString());
+                    setGraphic(text);
+                }
+            }
+        });
+
+        //Kun solua klikataan, niin sitä voidaan muokata, ja uusi teksti asetataan soluun
+        TableColumnId.setOnEditCommit(new EventHandler<TableColumn.CellEditEvent<Tehtava, Integer>>() {
+            @Override
+            public void handle(TableColumn.CellEditEvent<Tehtava, Integer> tehtavaIntegerCellEditEvent) {
+                Tehtava tehtava = tehtavaIntegerCellEditEvent.getRowValue();
+                Integer uusiArvo = tehtavaIntegerCellEditEvent.getNewValue();
+                //tehtavanykyId = tehtavaIntegerCellEditEvent.getNewValue();
+                if (uusiArvo != null) {
+                    tehtava.setTehtavaId(uusiArvo);
+                    TextIlmoitusAdd.setText("");
+                }
+                else {
+                    TableViewCenter.refresh();
+                }
+            }
+        });
 
         //Metodi jossa muutetaan TableView:n Nimi-sarakkeen tietoja
         TableColumnNimi.setCellFactory(column -> new TextFieldTableCell<>(new DefaultStringConverter()) {
@@ -158,22 +236,31 @@ public class TaskManagerMainUIController {
     @FXML
     private void AddTehtava() {
 
+        String idString = TextFieldId.getText();
         String nimi = TextFieldNimi.getText();
         String kuvaus = TextFieldKuvaus.getText();
 
         //Jos TextField tyhjä, niin error-viesti
-        if (TextFieldNimi.getText().isEmpty() || TextFieldKuvaus.getText().isEmpty()){
-            TextIlmoitusAdd.setText("Molemmissa tekstikentissä pitää olla tekstiä!");
+        if (TextFieldId.getText().isEmpty() || TextFieldNimi.getText().isEmpty() || TextFieldKuvaus.getText().isEmpty()){
+            TextIlmoitusAdd.setText("Kaikissa tekstikentissä pitää olla tekstiä!");
         }
 
+        else{
         //Muuten lisätään uusi tehtävä ja tyhjennetään tekstikentät
-        else {
-            TableViewCenter.getItems().add(new Tehtava(nimi, kuvaus));
+        try {
+            int tehtavaid = Integer.parseInt(idString);
 
+            TableViewCenter.getItems().add(new Tehtava(tehtavaid, nimi, kuvaus));
+
+            // Tyhjennetään kentät
+            TextFieldId.clear();
             TextFieldNimi.clear();
             TextFieldKuvaus.clear();
             TextIlmoitusAdd.setText("");
-        }
+
+        } catch (NumberFormatException e) {
+            TextIlmoitusAdd.setText("Tehtävän ID:n täytyy olla kokonaisluku!");
+        }}
     }
 
     //Metodi, jossa tehtävä poistetaan
@@ -185,7 +272,7 @@ public class TaskManagerMainUIController {
 
         //Jos solu on tyhjä, niin error-viesti
         if (selectionModel.isEmpty()){
-            TextIlmoitusDelete.setText("Valitse poistettava kenttä!");
+            TextIlmoitusDelete.setText("Valitse poistettava solu!");
         }
         else {
 

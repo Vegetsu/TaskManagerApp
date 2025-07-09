@@ -1,13 +1,29 @@
 package org.example.TaskManagerApp;
 
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 
 public class Tehtava {
     private SimpleStringProperty Tehtavanimi, Tehtavakuvaus;
 
-    public Tehtava(String tehtavanimi, String tehtavakuvaus) {
+    private SimpleIntegerProperty TehtavaId;
+
+    public Tehtava(Integer tehtavaid,String tehtavanimi, String tehtavakuvaus) {
         Tehtavanimi = new SimpleStringProperty(tehtavanimi);
         Tehtavakuvaus = new SimpleStringProperty(tehtavakuvaus);
+        TehtavaId = new SimpleIntegerProperty(tehtavaid);
+    }
+
+    public Integer getTehtavaId() {
+        return TehtavaId.get();
+    }
+
+    public SimpleIntegerProperty tehtavaIdProperty() {
+        return TehtavaId;
+    }
+
+    public void setTehtavaId(Integer tehtavaId) {
+        this.TehtavaId.set(tehtavaId);
     }
 
     public String getTehtavanimi() {
