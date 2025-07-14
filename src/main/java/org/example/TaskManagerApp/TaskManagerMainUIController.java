@@ -9,6 +9,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.StackPane;
 import javafx.scene.text.Text;
@@ -20,6 +21,10 @@ import javafx.util.converter.DefaultStringConverter;
 import javafx.util.converter.IntegerStringConverter;
 
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Arrays;
 
 public class TaskManagerMainUIController {
@@ -88,6 +93,15 @@ public class TaskManagerMainUIController {
 
     private Integer tehtavanykyId;
 
+    ObservableList<Tehtava> tehtavalist;
+
+    int index = -1;
+
+    Connection conn = null;
+
+    ResultSet rs = null;
+
+    PreparedStatement ps  = null;
 
     public class CustomIntegerStringConverter extends IntegerStringConverter{
         private final IntegerStringConverter converter = new IntegerStringConverter();
@@ -115,7 +129,16 @@ public class TaskManagerMainUIController {
 
     //AlustaaTableView:n eri tietoja, kun ikkuna avataan
     @FXML
-    private void initialize() {
+    private void initialize() throws SQLException {
+
+        conn =SQLTietokanta.Openconnection();
+        tehtavalist =SQLTietokanta.Tehtavatiedot();
+        TableViewCenter.setItems(tehtavalist);
+        //System.out.println(tehtavalist);
+
+        //TableColumnId.setCellValueFactory(new PropertyValueFactory<Tehtava, Integer>("id"));
+        //TableColumnId.setCellValueFactory(new PropertyValueFactory<Tehtava, Integer>("id"));
+        //TableColumnId.setCellValueFactory(new PropertyValueFactory<Tehtava, Integer>("id"));
 
         //Asettaa TableView:n solut saamaan arvot TextFieldId-tekstiboksista, TextFieldNimi-tekstiboksista ja TextFieldKuvaus-tekstiboksista
         TableColumnId.setCellValueFactory(data -> data.getValue().tehtavaIdProperty().asObject());
@@ -155,10 +178,19 @@ public class TaskManagerMainUIController {
             public void handle(TableColumn.CellEditEvent<Tehtava, Integer> tehtavaIntegerCellEditEvent) {
                 Tehtava tehtava = tehtavaIntegerCellEditEvent.getRowValue();
                 Integer uusiArvo = tehtavaIntegerCellEditEvent.getNewValue();
+                Integer vanhaArvo = tehtavaIntegerCellEditEvent.getOldValue();
                 //tehtavanykyId = tehtavaIntegerCellEditEvent.getNewValue();
                 if (uusiArvo != null) {
                     tehtava.setTehtavaId(uusiArvo);
                     TextIlmoitusAdd.setText("");
+
+                    try {
+                        System.out.println(vanhaArvo);
+                        System.out.println(uusiArvo);
+                        SQLTietokanta.PaivitaId(uusiArvo,vanhaArvo,conn);
+                    } catch (SQLException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
                 else {
                     TableViewCenter.refresh();
@@ -194,10 +226,19 @@ public class TaskManagerMainUIController {
             public void handle(TableColumn.CellEditEvent<Tehtava, String> tehtavaStringCellEditEvent) {
                 Tehtava tehtava = tehtavaStringCellEditEvent.getRowValue();
                 tehtava.setTehtavanimi(tehtavaStringCellEditEvent.getNewValue());
+
+                try {
+                    SQLTietokanta.PaivitaNimi(tehtavaStringCellEditEvent.getNewValue(),tehtava.getTehtavaId(),conn);
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
             }
+
+
+
         });
 
-        //Metodi jossa muutetaan TableView:n Nimi-sarakkeen tietoja
+        //Metodi jossa muutetaan TableView:n Kuvaus-sarakkeen tietoja
         TableColumnKuvaus.setCellFactory(column -> new TextFieldTableCell<>(new DefaultStringConverter()) {
             private final Text text = new Text();
 
@@ -225,6 +266,13 @@ public class TaskManagerMainUIController {
             public void handle(TableColumn.CellEditEvent<Tehtava, String> tehtavaStringCellEditEvent) {
                 Tehtava tehtava = tehtavaStringCellEditEvent.getRowValue();
                 tehtava.setTehtavakuvaus(tehtavaStringCellEditEvent.getNewValue());
+               //System.out.println(tehtava);
+                //System.out.println(tehtava.getTehtavaId());
+                try {
+                    SQLTietokanta.PaivitaKuvaus(tehtavaStringCellEditEvent.getNewValue(),tehtava.getTehtavaId(),conn);
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
             }
         });
 
@@ -252,6 +300,8 @@ public class TaskManagerMainUIController {
 
             TableViewCenter.getItems().add(new Tehtava(tehtavaid, nimi, kuvaus));
 
+            SQLTietokanta.lisaatehtava(tehtavaid,nimi,kuvaus,conn);
+
             // Tyhjennetään kentät
             TextFieldId.clear();
             TextFieldNimi.clear();
@@ -260,7 +310,10 @@ public class TaskManagerMainUIController {
 
         } catch (NumberFormatException e) {
             TextIlmoitusAdd.setText("Tehtävän ID:n täytyy olla kokonaisluku!");
-        }}
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        }
     }
 
     //Metodi, jossa tehtävä poistetaan
@@ -310,18 +363,30 @@ public class TaskManagerMainUIController {
                 //Haetaan Confirmation screenin puolelta tieto käyttäjän valinnasta getUserChoice-metodilla, ja jos
                 //Käyttäjä on painanut kyllä Confirmation screenillä, niin laitetaan TableView-sarakkeet listaan ja
                 //poistetaan valittu sarake TableView:stä. Suljetaan lopuksi Confirmation screen.
-                if (TaskManagerConfirmationKontrolli.getUserChoice()){
+                /*if (TaskManagerConfirmationKontrolli.getUserChoice()){
                     ObservableList<Integer> list = selectionModel.getSelectedIndices();
                     Integer[] selectedIndices = new Integer[list.size()];
                     selectedIndices = list.toArray(selectedIndices);
                     Arrays.sort(selectedIndices);
 
                     for (int i = selectedIndices.length-1; i>=0; i--){
+                        System.out.println(i);
+                        System.out.println(TableViewCenter.getItems().get(3).getTehtavaId());
                         selectionModel.clearSelection(selectedIndices[i]);
                         TableViewCenter.getItems().remove(selectedIndices[i].intValue());
+                        SQLTietokanta.poistaTehtava(i,conn);
                     }
                     TextIlmoitusDelete.setText("");
                     primarystage.close();
+                }*/
+
+                if (TaskManagerConfirmationKontrolli.getUserChoice()){
+                    int Id = selectionModel.getSelectedIndex();
+                    System.out.println(Id);
+                    System.out.println(TableViewCenter.getItems().get(Id).getTehtavaId());
+                    SQLTietokanta.poistaTehtava(TableViewCenter.getItems().get(Id).getTehtavaId(),conn);
+                    selectionModel.clearSelection(Id);
+                    TableViewCenter.getItems().remove(Id);
                 }
 
                 //Jos käyttäjä valitsee Ei-confirmation screenissä, niin ikkuna vain suljetaan eikä muuta tehdä
@@ -333,6 +398,8 @@ public class TaskManagerMainUIController {
 
             catch (IOException ioError) {
                 ioError.printStackTrace();
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
             }
         }
     }
