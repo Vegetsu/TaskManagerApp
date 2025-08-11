@@ -129,7 +129,7 @@ public class TaskManagerMainUIController {
 
     //AlustaaTableView:n eri tietoja, kun ikkuna avataan
     @FXML
-    private void initialize() throws SQLException {
+    private void initialize() throws SQLException, IOException {
 
         conn =SQLTietokanta.Openconnection();
         tehtavalist =SQLTietokanta.Tehtavatiedot();
@@ -141,17 +141,17 @@ public class TaskManagerMainUIController {
         //TableColumnId.setCellValueFactory(new PropertyValueFactory<Tehtava, Integer>("id"));
 
         //Asettaa TableView:n solut saamaan arvot TextFieldId-tekstiboksista, TextFieldNimi-tekstiboksista ja TextFieldKuvaus-tekstiboksista
-        TableColumnId.setCellValueFactory(data -> data.getValue().tehtavaIdProperty().asObject());
+        //TableColumnId.setCellValueFactory(data -> data.getValue().tehtavaIdProperty().asObject());
         TableColumnNimi.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getTehtavanimi()));
         TableColumnKuvaus.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getTehtavakuvaus()));
 
         //Asettaa TableView:n solut viemään puolet ja puolet Tableview:n koosta
-        TableColumnId.prefWidthProperty().bind(TableViewCenter.widthProperty().multiply(0.33));
+        //TableColumnId.prefWidthProperty().bind(TableViewCenter.widthProperty().multiply(0.33));
         TableColumnNimi.prefWidthProperty().bind(TableViewCenter.widthProperty().multiply(0.33));
         TableColumnKuvaus.prefWidthProperty().bind(TableViewCenter.widthProperty().multiply(0.33));
 
         //Metodi jossa muutetaan TableView:n ID-sarakkeen tietoja
-        TableColumnId.setCellFactory(column -> new TextFieldTableCell<Tehtava, Integer>(new CustomIntegerStringConverter()) {
+        /*TableColumnId.setCellFactory(column -> new TextFieldTableCell<Tehtava, Integer>(new CustomIntegerStringConverter()) {
             private final Text text = new Text();
 
             {
@@ -170,10 +170,10 @@ public class TaskManagerMainUIController {
                     setGraphic(text);
                 }
             }
-        });
+        });*/
 
         //Kun solua klikataan, niin sitä voidaan muokata, ja uusi teksti asetataan soluun
-        TableColumnId.setOnEditCommit(new EventHandler<TableColumn.CellEditEvent<Tehtava, Integer>>() {
+        /*TableColumnId.setOnEditCommit(new EventHandler<TableColumn.CellEditEvent<Tehtava, Integer>>() {
             @Override
             public void handle(TableColumn.CellEditEvent<Tehtava, Integer> tehtavaIntegerCellEditEvent) {
                 Tehtava tehtava = tehtavaIntegerCellEditEvent.getRowValue();
@@ -181,13 +181,13 @@ public class TaskManagerMainUIController {
                 Integer vanhaArvo = tehtavaIntegerCellEditEvent.getOldValue();
                 //tehtavanykyId = tehtavaIntegerCellEditEvent.getNewValue();
                 if (uusiArvo != null) {
-                    tehtava.setTehtavaId(uusiArvo);
+                   // tehtava.setTehtavaId(uusiArvo);
                     TextIlmoitusAdd.setText("");
 
-                    try {
+                    /*try {
                         System.out.println(vanhaArvo);
                         System.out.println(uusiArvo);
-                        SQLTietokanta.PaivitaId(uusiArvo,vanhaArvo,conn);
+                        //SQLTietokanta.PaivitaId(uusiArvo,vanhaArvo,conn);
                     } catch (SQLException e) {
                         throw new RuntimeException(e);
                     }
@@ -196,7 +196,8 @@ public class TaskManagerMainUIController {
                     TableViewCenter.refresh();
                 }
             }
-        });
+        }
+        );*/
 
         //Metodi jossa muutetaan TableView:n Nimi-sarakkeen tietoja
         TableColumnNimi.setCellFactory(column -> new TextFieldTableCell<>(new DefaultStringConverter()) {
@@ -284,26 +285,30 @@ public class TaskManagerMainUIController {
     @FXML
     private void AddTehtava() {
 
-        String idString = TextFieldId.getText();
+       // String idString = TextFieldId.getText();
         String nimi = TextFieldNimi.getText();
         String kuvaus = TextFieldKuvaus.getText();
 
         //Jos TextField tyhjä, niin error-viesti
-        if (TextFieldId.getText().isEmpty() || TextFieldNimi.getText().isEmpty() || TextFieldKuvaus.getText().isEmpty()){
+        if (TextFieldNimi.getText().isEmpty() || TextFieldKuvaus.getText().isEmpty()){
             TextIlmoitusAdd.setText("Kaikissa tekstikentissä pitää olla tekstiä!");
         }
 
         else{
         //Muuten lisätään uusi tehtävä ja tyhjennetään tekstikentät
         try {
-            int tehtavaid = Integer.parseInt(idString);
+            //int tehtavaid = Integer.parseInt(idString);
 
-            TableViewCenter.getItems().add(new Tehtava(tehtavaid, nimi, kuvaus));
 
-            SQLTietokanta.lisaatehtava(tehtavaid,nimi,kuvaus,conn);
+            int uusiId = SQLTietokanta.lisaatehtava(nimi, kuvaus, 6, conn);
+            if (uusiId != -1) {
+                TableViewCenter.getItems().add(new Tehtava(uusiId, nimi, kuvaus, 6));
+            }
+
+
 
             // Tyhjennetään kentät
-            TextFieldId.clear();
+            //TextFieldId.clear();
             TextFieldNimi.clear();
             TextFieldKuvaus.clear();
             TextIlmoitusAdd.setText("");
@@ -347,12 +352,6 @@ public class TaskManagerMainUIController {
                 //primarystage.show();
                 primarystage.initModality(Modality.APPLICATION_MODAL);
 
-                //URL fxmlUrl = getClass().getResource("/org/example/TaskManagerApp/fxml/TaskManagerConfirmation.fxml");
-               // System.out.println("FXML path: " + fxmlUrl); // tämän pitäisi EI olla null
-
-                // (valinnainen) jos haluat estää sulkemisen ruksista, lisää tämä:
-                // stage.setOnCloseRequest(event -> event.consume());
-
                 //Asetetaan valitun tehtävän nimi näkyväksi Confirmation screen -ikkunaan
                 TaskManagerConfirmationKontrolli.asetaTehtavaNimi(TableViewCenter.getSelectionModel().getSelectedItem().getTehtavanimi());
 
@@ -381,12 +380,14 @@ public class TaskManagerMainUIController {
                 }*/
 
                 if (TaskManagerConfirmationKontrolli.getUserChoice()){
-                    int Id = selectionModel.getSelectedIndex();
-                    System.out.println(Id);
-                    System.out.println(TableViewCenter.getItems().get(Id).getTehtavaId());
-                    SQLTietokanta.poistaTehtava(TableViewCenter.getItems().get(Id).getTehtavaId(),conn);
-                    selectionModel.clearSelection(Id);
-                    TableViewCenter.getItems().remove(Id);
+                    Tehtava valittu = TableViewCenter.getSelectionModel().getSelectedItem();
+                    System.out.println(valittu);
+                    int id = valittu.getTehtavaId();
+                    System.out.println(id);
+                    //System.out.println(TableViewCenter.getItems().get(Id).getTehtavaId());
+                    SQLTietokanta.poistaTehtava(id,conn);
+                    selectionModel.clearSelection(id);
+                    TableViewCenter.getItems().remove(valittu);
                 }
 
                 //Jos käyttäjä valitsee Ei-confirmation screenissä, niin ikkuna vain suljetaan eikä muuta tehdä

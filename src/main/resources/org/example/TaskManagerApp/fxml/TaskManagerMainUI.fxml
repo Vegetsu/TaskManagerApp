@@ -11,19 +11,13 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-<BorderPane id="BorderPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="525.0" prefWidth="817.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.TaskManagerApp.TaskManagerMainUIController">
+<BorderPane id="BorderPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="525.0" prefWidth="817.0" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.TaskManagerApp.TaskManagerMainUIController">
    <left>
       <AnchorPane fx:id="AnchorPaneLeft" prefHeight="375.0" prefWidth="171.0" style="-fx-border-color: black;" BorderPane.alignment="CENTER">
          <children>
             <Button fx:id="ButtonSave" layoutX="43.0" layoutY="285.0" mnemonicParsing="false" onMouseClicked="#AddTehtava" text="Lisää tehtävä" />
-            <TextField fx:id="TextFieldId" layoutX="20.0" layoutY="108.0" />
             <TextField fx:id="TextFieldNimi" layoutX="20.0" layoutY="164.0" onAction="#AddTehtava" />
             <TextField fx:id="TextFieldKuvaus" layoutX="19.0" layoutY="226.0" onAction="#AddTehtava" />
-            <Text fx:id="TextId" layoutX="53.0" layoutY="103.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Tehtävän ID:">
-               <font>
-                  <Font size="15.0" />
-               </font>
-            </Text>
             <Text fx:id="TextNimi" layoutX="46.0" layoutY="159.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Tehtävän nimi:">
                <font>
                   <Font size="15.0" />
@@ -68,7 +62,6 @@
    <center>
       <TableView fx:id="TableViewCenter" editable="true" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
         <columns>
-            <TableColumn fx:id="TableColumnId" prefWidth="75.0" text="Tehtävän ID:" />
           <TableColumn fx:id="TableColumnNimi" prefWidth="90.0" text="Tehtävän nimi:" />
           <TableColumn fx:id="TableColumnKuvaus" prefWidth="105.0" text="Tehtävän kuvaus:" />
         </columns>

@@ -6,12 +6,18 @@ import javafx.beans.property.SimpleStringProperty;
 public class Tehtava {
     private SimpleStringProperty Tehtavanimi, Tehtavakuvaus;
 
-    private SimpleIntegerProperty TehtavaId;
+    private SimpleIntegerProperty TehtavaId, IdKayttaja;
 
-    public Tehtava(Integer tehtavaid,String tehtavanimi, String tehtavakuvaus) {
+    public Tehtava(Integer tehtavaid,String tehtavanimi, String tehtavakuvaus, Integer idkayttaja) {
         Tehtavanimi = new SimpleStringProperty(tehtavanimi);
         Tehtavakuvaus = new SimpleStringProperty(tehtavakuvaus);
         TehtavaId = new SimpleIntegerProperty(tehtavaid);
+        IdKayttaja = new SimpleIntegerProperty(idkayttaja);
+    }
+
+    public Tehtava(String tehtavanimi, String tehtavakuvaus) {
+        Tehtavanimi = new SimpleStringProperty(tehtavanimi);
+        Tehtavakuvaus = new SimpleStringProperty(tehtavakuvaus);
     }
 
     public Integer getTehtavaId() {
@@ -48,5 +54,17 @@ public class Tehtava {
 
     public void setTehtavakuvaus(String tehtavakuvaus) {
         this.Tehtavakuvaus.set(tehtavakuvaus);
+    }
+
+    public Integer getIdKayttaja() {
+        return IdKayttaja.get();
+    }
+
+    public SimpleIntegerProperty idKayttajaProperty() {
+        return IdKayttaja;
+    }
+
+    public void setIdKayttaja(Integer idKayttaja) {
+        this.IdKayttaja.set(idKayttaja);
     }
 }

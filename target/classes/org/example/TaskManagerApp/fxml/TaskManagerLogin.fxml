@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="450.0" prefWidth="704.0" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.TaskManagerApp.TaskManagerLoginController">
+   <children>
+      <Text layoutX="254.0" layoutY="83.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Tervetuloa!">
+         <font>
+            <Font size="40.0" />
+         </font>
+      </Text>
+      <TextField fx:id="TextFieldTunnus" layoutX="278.0" layoutY="149.0" />
+      <Text layoutX="285.0" layoutY="143.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Käyttäjätunnus:">
+         <font>
+            <Font size="20.0" />
+         </font>
+      </Text>
+      <Text layoutX="312.0" layoutY="225.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Salasana:">
+         <font>
+            <Font size="20.0" />
+         </font>
+      </Text>
+      <TextField fx:id="TextFieldSalasana" layoutX="278.0" layoutY="230.0" />
+      <Button fx:id="ButtonLogin" layoutX="297.0" layoutY="312.0" mnemonicParsing="false" onAction="#varmistakayttaja" prefHeight="35.0" prefWidth="110.0" text="Kirjaudu sisään" />
+      <Button fx:id="temporary" layoutX="309.0" layoutY="389.0" mnemonicParsing="false" onMouseClicked="#avaaluokayttaja" prefHeight="30.0" prefWidth="88.0" text="Luo käyttäjä" />
+      <Text fx:id="KirjautumisError" fill="RED" layoutX="201.0" layoutY="294.0" strokeType="OUTSIDE" strokeWidth="0.0">
+         <font>
+            <Font size="20.0" />
+         </font>
+      </Text>
+   </children>
+</AnchorPane>

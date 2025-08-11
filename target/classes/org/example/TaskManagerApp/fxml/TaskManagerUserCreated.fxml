@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.TaskManagerApp.TaskManagerUserCreatedController">
+   <children>
+      <Text layoutX="141.0" layoutY="146.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Käyttäjä luotu!">
+         <font>
+            <Font size="50.0" />
+         </font>
+      </Text>
+      <Button fx:id="ButtonOK" layoutX="254.0" layoutY="240.0" mnemonicParsing="false" onMouseClicked="#suljekirjautuminen" prefHeight="51.0" prefWidth="92.0" text="OK" />
+   </children>
+</AnchorPane>
