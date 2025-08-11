@@ -14,7 +14,7 @@ public class SQLTietokanta {
     public static Connection Openconnection() throws SQLException, IOException {
         Properties props = new Properties();
 
-        try (InputStream input = new FileInputStream("src/main/resources/config3.properties")) {
+        try (InputStream input = new FileInputStream("src/main/resources/config.properties")) {
             props.load(input);
         }
 
