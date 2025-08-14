@@ -7,14 +7,18 @@ import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
-import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
+
+/*
+* TaskManagerin NewUserController -luokka, joka määrittelee toiminnallisuudet uuden käyttäjän luomiselle.
+*  -Lukee käyttäjän syöttämät tiedot käyttäjätunnus- ja salasana-tekstikentistä, vertailee näitä tietokannan jo luotuihin
+*   käyttäjiin, ja luo uuden käyttäjän tietokantaan, jos käyttäjää ei vielä aiemmin ollut olemassa.
+ */
 
 
 public class TaskManagerNewUserController {
@@ -49,11 +53,30 @@ public class TaskManagerNewUserController {
 
     Connection conn = null;
 
+
+    /*
+    * Metodi, joka lukee käyttäjän syötteet käyttäjätunnus- ja salasana-ruuduista, ja luo uuden käyttäjän näiden tietojen
+    * perusteella. Jos käyttäjän luominen onnistuu, niin palataan avataan ikkuna jossa ilmoitetaan uuden käyttäjän
+    * onnistuneesta luonnista ja palataan takaisin kirjautumisruutuun, jossa käyttäjä voi nyt luoduilla tunnuksilla
+    * kirjautua sisään.
+     */
     public void luokayttaja() throws SQLException, IOException {
         conn =SQLTietokanta.Openconnection();
 
 
+        /*
+        * Salasana pitää kirjoittaa kahdesti oikein salasana- ja varmistusruutuihin, jotta uuden käyttäjän luonti
+        * hyväksytään. Salasanalaatikot ovat suojattu niin, että kirjainten tai numeroiden sijasta salasanakenttiin
+        * kirjoittuu vain ympyröitä, jotta ulkopuoliset eivät näe salasanan kirjoittamista. Salasanalaatikoiden vieressä
+        * on napit, joilla oikean salasanan saa näkyviin.
+         */
         String tunnus = TextFieldTunnus.getText();
+
+        /*
+        * salasana ja varmistus muuttujat on luotu näillä ehdoilla siksi, että salasanan luku onnistuisi oikein. Jos
+        * salasana on piilotetussa muodossa, luetaan suojauksen takana olevaa oikeaa salasanaa mutta jos salasana
+        * on näkyvissä, luetaan näkyvää salasanaa.
+         */
         String salasana = CheckBoxLuoSalasana.isSelected()
                 ? TextFieldLuoNormaalli.getText()
                 : PasswordFieldLuoHidden.getText();
@@ -64,6 +87,10 @@ public class TaskManagerNewUserController {
         if (tunnus.isEmpty()){
             KirjautumisError.setText("Käyttäjänimi puuttuu!");
         }
+
+        /*Jos molemmat salasanat ovat oikein, niin lisätään luotu käyttäjätunnus tietokantaan ja avataan uuden käyttäjän
+        * luonnin varmistus -ikkuna.
+         */
         else if (salasana.equals(varmistus)){
             if (SQLTietokanta.Onkokayttajaolemassa(tunnus,conn)){
                 SQLTietokanta.lisaaKayttaja(tunnus, UserService.hashPassword(salasana), conn);
@@ -94,6 +121,10 @@ public class TaskManagerNewUserController {
 
     }
 
+
+    /* Metodi, jolla CheckBox-ruudussa ollessa ruksi salasana muuttuu näkyväksi ja CheckBox-ruudun ollessa tyhjänä
+    * salasana näkyy palleroina.
+     */
     @FXML
     private void ChangeHidden() {
     if (CheckBoxLuoSalasana.isSelected()){
@@ -108,6 +139,9 @@ public class TaskManagerNewUserController {
     TextFieldLuoNormaalli.setVisible(false);
     }
 
+    /* Metodi, jolla CheckBox-ruudussa ollessa ruksi salasanavarimustus muuttuu näkyväksi ja CheckBox-ruudun ollessa tyhjänä
+     * salasanavarmistus näkyy palleroina.
+     */
     @FXML
     private void ChangeHiddenVarmistus() {
         if (CheckBoxVarmistaSalasana.isSelected()){

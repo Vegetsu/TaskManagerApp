@@ -32,7 +32,7 @@
             <Font size="20.0" />
          </font>
       </Text>
-      <TextField fx:id="TextFieldSalasanaUudelleen" layoutX="307.0" layoutY="300.0" />
+      <TextField fx:id="TextFieldSalasanaUudelleen" layoutX="307.0" layoutY="300.0" visible="false" />
       <Text fx:id="KirjautumisError" fill="RED" layoutX="280.0" layoutY="368.0" strokeType="OUTSIDE" strokeWidth="0.0">
          <font>
             <Font size="20.0" />

@@ -11,7 +11,7 @@ import java.io.IOException;
 
 
 
-
+// Metodi joka avaa pääikkunanäkymän.
 public class TaskManagerMainUI extends Application {
     @Override
     public void start(Stage stage) throws IOException {

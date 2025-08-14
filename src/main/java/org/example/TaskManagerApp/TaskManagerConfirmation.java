@@ -11,7 +11,7 @@ import java.io.IOException;
 
 
 
-
+// Metodi joka avaa TaskManagerConfirmation -ruudun.
 public class TaskManagerConfirmation extends Application {
     @Override
     public void start(Stage stage) throws IOException {

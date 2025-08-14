@@ -11,7 +11,7 @@ import java.io.IOException;
 
 
 
-
+// Metodi jolla TaskManagerLogin -ikkuna avataan.
 public class TaskManagerLogin extends Application {
     @Override
     public void start(Stage stage) throws IOException {

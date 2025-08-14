@@ -5,6 +5,13 @@ import javafx.scene.control.Button;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
+
+/*
+* TaskManagerin tehtävän poiston varmistuksen controller -luokka.
+*  -Alustaa kyllä- ja ei-napeille oikeat palautettavat arvot, joiden mukaan toimitaan tietyllä tavalla
+*   TaskManagerMainUIController -luokassa.
+*  -Yhdistää ConfirmationScreenin MainScreeniin.
+ */
 public class TaskManagerConfirmationController {
 
     private boolean userChoice = false;

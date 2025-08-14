@@ -1,9 +1,9 @@
 package org.example.TaskManagerApp;
 
+
+// Ohjelman päämetodi joka käynnistää kaiken avaamalla sisäänkirjautumisikkunan.
 public class Main {
     public static void main(String[] args) {
-        //TaskManagerMainUI.main(args);
-        //TaskManagerConfirmation.main(args);
         TaskManagerLogin.main(args);
     }
 }

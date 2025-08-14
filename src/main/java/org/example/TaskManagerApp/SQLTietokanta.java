@@ -9,44 +9,61 @@ import java.io.InputStream;
 import java.sql.*;
 import java.util.Properties;
 
+/*
+*Taskmanagerin SQL-tietokanta-luokka, jossa määritellään toiminnallisuudet MySql-tietokannan kanssa, ja jonka metodeja
+* käytetään apuna muissa luokissa.
+*  -Hakee TableView:llä näytettävät tiedot tietokannasta
+*  -Määrittelee tietokantatoiminnallisuudet eri toiminnoille, joita TableView:iin on mahdollista tehdä, kuten
+*   tehtävän kuvauksen ja nimen lisäyksen, muokkauksen ja poiston sekä käyttäjän lisäyksen ja poiston
+*  -Määrittelee eri käyttäjän varmistuksia, joita käytetään apuna virheiden välttymiseksi, ettei tietokantaan esim. lisätä
+*   duplikaattikäyttäjiä
+ */
+
 public class SQLTietokanta {
 
+
+    /*
+    * Metodi, joka avaa yhteyden MySql-tietokantaan. Hakee tiedot config.properties kansiosta, jotta tietokannan
+    * arkaluontoiset tiedot säilyvät turvassa.
+     */
     public static Connection Openconnection() throws SQLException, IOException {
         Properties props = new Properties();
 
+        // Määritetään config.properties käytettäväksi tietokannan kirjautumistietojen hakemiseen.
         try (InputStream input = new FileInputStream("src/main/resources/config.properties")) {
             props.load(input);
         }
 
+
+        // Tietokannan osoite, tietokannan käyttäjän nimi sekä tietokannan salasana, jotka haetaan config.properties kansiosta
         String url = props.getProperty("db.url");
         String user = props.getProperty("db.user");
         String password = props.getProperty("db.password");
 
+        // Muodostetaan yhteys
         Connection yhteys = DriverManager.getConnection(url, user, password);
         System.out.println("Yhteys muodostettu");
 
         return yhteys;
     }
 
+
     /*
-    public static Connection Openconnection() throws SQLException {
-        Connection yhteys = DriverManager.getConnection(
-                "jdbc:mysql://localhost:" + 3307 + "/" + "taskmanager_schema",
-                "root", ""
-        );
-        System.out.println("yhteys muodostettu");
-        return yhteys;
-
-    }*/
-
-    public  static ObservableList<Tehtava> Tehtavatiedot() throws SQLException, IOException {
+    * Metodi jolla haetaan tietokannasta kaikki tietyn henkilön tehtävätiedot ja asetetaan ne sitten listaan, jota
+    * käytetään TableView:ssä.
+     */
+    public  static ObservableList<Tehtava> Tehtavatiedot(Integer kayttajaid) throws SQLException, IOException {
         Connection conn = Openconnection();
         ObservableList<Tehtava> lista = FXCollections.observableArrayList();
 
         try {
-            PreparedStatement ps = conn.prepareStatement("Select * from tehtavamanager");
+            // Valitaan kaikki tehtävätiedot tietokannasta valitun käyttäjän id:n mukaan.
+            PreparedStatement ps = conn.prepareStatement("Select * from tehtavamanager WHERE idKayttaja = ?");
+
+            ps.setInt(1, kayttajaid);
             ResultSet rs = ps.executeQuery();
 
+            // Lisätään tiedot TableView:ssä käytettävään listaan.
             while (rs.next()){
                 lista.add(new Tehtava(Integer.parseInt(rs.getString("idTehtava")), rs.getString("NimiTehtava"), rs.getString("KuvausTehtava"), Integer.parseInt(rs.getString("idKayttaja"))));
             }
@@ -58,7 +75,14 @@ public class SQLTietokanta {
         return lista;
     }
 
+
+    /*
+    * Metodi, jolla lisätään tehtävä tietokantaan. Metodi myös palauttaa nykyisen käyttäjän id:n, jotta se voidaan heti
+    * lisätä TableViewiin jottei poiston kanssa tule ongelmia.
+     */
     public static int lisaatehtava(String nimi, String kuvaus, Integer kayttajaid, Connection yhteys) throws SQLException {
+
+        // Tehtävän lisäys tietokantaan. Lisätään tehtävän nimi, tehtävän kuvaus ja nykyisen käyttäjän id.
         String sql = """
         INSERT INTO tehtavamanager(NimiTehtava, KuvausTehtava, IdKayttaja)
         VALUES (?,?,?)
@@ -72,6 +96,7 @@ public class SQLTietokanta {
             statement.executeUpdate();
 
 
+            // Lisätyn käyttäjän id:n palautus
             try (ResultSet rs = statement.getGeneratedKeys()) {
                 if (rs.next()) {
                     return rs.getInt(1);
@@ -82,7 +107,9 @@ public class SQLTietokanta {
         return -1;
     }
 
-
+/*
+* Metodi joka päivittää tehtävän kuvauksen tietokantaan tehtävän id:n avulla.
+ */
     public static void PaivitaKuvaus(String kuvaus,Integer id, Connection yhteys) throws SQLException {
 
         try (PreparedStatement statement = yhteys.prepareStatement("UPDATE tehtavamanager SET KuvausTehtava=? WHERE IdTehtava=?")) {
@@ -93,6 +120,9 @@ public class SQLTietokanta {
         }
     }
 
+    /*
+    * Metodi joka päivittää tehtävän nimen tietokantaan tehtävän id:n avulla.
+     */
     public static void PaivitaNimi(String nimi,Integer id, Connection yhteys) throws SQLException {
 
         try (PreparedStatement statement = yhteys.prepareStatement("UPDATE tehtavamanager SET NimiTehtava=? WHERE IdTehtava=?")) {
@@ -103,16 +133,10 @@ public class SQLTietokanta {
         }
     }
 
-    /*public static void PaivitaId(Integer uusiId, Integer vanhaId, Connection yhteys) throws SQLException {
 
-        try (PreparedStatement statement = yhteys.prepareStatement("UPDATE tehtavamanager SET IdTehtava=? WHERE IdTehtava=?")) {
-            statement.setInt(1, uusiId);
-            statement.setInt(2, vanhaId);
-            statement.executeUpdate();
-
-        }
-    }*/
-
+    /*
+    * Metodi, joka poistaa tehtävän tietokannasta tehtävän id:n mukaan.
+     */
     public static void poistaTehtava(Integer id,Connection yhteys) throws SQLException {
 
         try (PreparedStatement statement = yhteys.prepareStatement("DELETE FROM tehtavamanager WHERE IdTehtava=?")){
@@ -121,6 +145,9 @@ public class SQLTietokanta {
         }
     }
 
+    /*
+    * Metodi, joka lisää käyttäjän tietokantaan. Tietokantaan lisätään käyttäjätunnus ja salasana, joka hashataan.
+     */
     public static void lisaaKayttaja(String kayttajatunnus, String salasana,Connection yhteys) throws SQLException {
 
         try (PreparedStatement statement = yhteys.prepareStatement("""
@@ -134,6 +161,10 @@ public class SQLTietokanta {
         }
     }
 
+    /*
+    * Metodi, jota käytetään apuna oikean käyttäjän tunnistamisessa. Käyttäjätunnuksen avulla etsitään oikea käyttäjä
+    * tietokannasta, jonka löydyttyä käytetään UserService-luokan verifyPassword-metodia hashatun salasanan varmistukseen.
+     */
     public static boolean verifyKayttaja(String kayttajatunnus, String salasana, Connection yhteys) throws SQLException {
 
         try (PreparedStatement statement = yhteys.prepareStatement("""
@@ -152,7 +183,11 @@ public class SQLTietokanta {
         }
     }
 
-
+/*
+* Metodi, jolla varmistetaan käyttäjän olemassaolo tietokannassa. Metodi käyttää käyttäjätunnusta apuna etsiäkseen tätä
+* tietokannasta, ja jos tämän nimistä käyttäjää ei ole olemassa, se palauttaa falsen, jonka avulla toisessa metodissa
+* heitetään virheviesti käyttäjälle.
+ */
     public static boolean Onkokayttajaolemassa(String kayttajatunnus, Connection yhteys) throws SQLException {
 
         try (PreparedStatement statement = yhteys.prepareStatement("""
@@ -169,5 +204,26 @@ public class SQLTietokanta {
 
         }
     }
+
+    /*
+    * Metodi, jonka avulla talletetaan käyttäjän id kayttaja-muuttujaan kirjautumisvaiheessa
+    * TaskManagerLoginController- metodissa, jonka jälkeen tätä muuttujaa käytetään etsimään oikean käyttäjän tiedot
+    * tietokannasta TableViewiin.
+     */
+    public static int valitseKayttaja(String kayttajatunnus, Connection yhteys) throws SQLException {
+        try (PreparedStatement statement = yhteys.prepareStatement("""
+        SELECT id FROM kayttajat WHERE kayttajatunnus = ?
+    """)) {
+            statement.setString(1, kayttajatunnus);
+            try (ResultSet rs = statement.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("id");
+                } else {
+                    throw new SQLException("Käyttäjää ei löytynyt: " + kayttajatunnus);
+                }
+            }
+        }
+    }
+
 
 }

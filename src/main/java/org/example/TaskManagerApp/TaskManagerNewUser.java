@@ -2,16 +2,14 @@ package org.example.TaskManagerApp;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 import java.io.IOException;
 
 
-//test
 
-
+// Metodi joka avaa uuden käyttäjän luomisikkunan
 public class TaskManagerNewUser extends Application {
     @Override
     public void start(Stage stage) throws IOException {
