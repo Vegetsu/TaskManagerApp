@@ -21,12 +21,29 @@ import java.util.Properties;
 
 public class SQLTietokanta {
 
+    // Jos haluaa käyttää MySQL, vaihda private static final String DB_TYPE = "mysql".
+    private static final String DB_TYPE = "sqLite";
+
+
+/*
+* Metodi, joka valitsee, että yhdistetäänkö MySQL-tietokantaan vai SQLite-tietokantaan käyttämällä ylempänä annettua arvoa sqLite tai mysql.
+ */
+    public static Connection Openconnection() throws SQLException, IOException {
+        if (DB_TYPE.equalsIgnoreCase("mysql")) {
+            return openMySQLConnection();
+        } else if (DB_TYPE.equalsIgnoreCase("sqlite")) {
+            return openSQLiteConnection();
+        } else {
+            throw new IllegalArgumentException("Tuntematon tietokantatyyppi: " + DB_TYPE);
+        }
+    }
+
 
     /*
     * Metodi, joka avaa yhteyden MySql-tietokantaan. Hakee tiedot config.properties kansiosta, jotta tietokannan
     * arkaluontoiset tiedot säilyvät turvassa.
      */
-    public static Connection Openconnection() throws SQLException, IOException {
+    public static Connection openMySQLConnection() throws SQLException, IOException {
         Properties props = new Properties();
 
         // Määritetään config.properties käytettäväksi tietokannan kirjautumistietojen hakemiseen.
@@ -40,11 +57,50 @@ public class SQLTietokanta {
         String user = props.getProperty("db.user");
         String password = props.getProperty("db.password");
 
+       // String SQLite_url = "jdbc:sqlite:tehtavat.db";
+
         // Muodostetaan yhteys
         Connection yhteys = DriverManager.getConnection(url, user, password);
         System.out.println("Yhteys muodostettu");
 
         return yhteys;
+    }
+
+    /*
+    * Metodi, joka avaa yhteyden SQLite-tietokantaan.
+     */
+    private static Connection openSQLiteConnection() throws SQLException {
+        String SQLite_url = "jdbc:sqlite:tehtavat.db";
+        Connection yhteys = DriverManager.getConnection(SQLite_url);
+        System.out.println("Yhteys SQLite:en muodostettu");
+
+        initializeSQLiteDatabase(yhteys);
+        return yhteys;
+    }
+
+    /*
+    * Valmistelee SQLite-tietokannan valmiiksi, jos sitä ei ole vielä rakennettu.
+     */
+    private static void initializeSQLiteDatabase(Connection conn) throws SQLException {
+        try (Statement stmt = conn.createStatement()) {
+            stmt.execute("""
+                        CREATE TABLE IF NOT EXISTS kayttajat (
+                            id INTEGER PRIMARY KEY AUTOINCREMENT,
+                            kayttajatunnus TEXT UNIQUE NOT NULL,
+                            salasana_hash TEXT NOT NULL
+                        )
+                    """);
+
+            stmt.execute("""
+                        CREATE TABLE IF NOT EXISTS tehtavamanager (
+                            IdTehtava INTEGER PRIMARY KEY AUTOINCREMENT,
+                            NimiTehtava TEXT NOT NULL,
+                            KuvausTehtava TEXT,
+                            IdKayttaja INTEGER,
+                            FOREIGN KEY (IdKayttaja) REFERENCES kayttajat(id)
+                        )
+                    """);
+        }
     }
 
 
