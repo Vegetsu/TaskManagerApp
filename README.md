@@ -1,6 +1,10 @@
 **Instructions to use the Task Manager -software:**
 <br/>
 <br/>
+Database / SQL
+Database functionality is implemented in [`SQLTietokanta.java`](src/main/java/org/example/TaskManagerApp/SQLTietokanta.java).
+The class handles database connections and uses SQL queries for CRUD operations, user authentication and retrieving task data. The project supports MySQL and SQLite through JDBC.
+<br/>
 <br/>
 The project is run from the TaskManagerApp\src\main\java\org\example\TaskManagerApp\Main.java file.
 
